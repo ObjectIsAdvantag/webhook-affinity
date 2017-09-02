@@ -1,0 +1,23 @@
+{
+  "name": "webhook-affinity",
+  "version": "0.1.0",
+  "description": "Load Balancing Affinity for Cisco Spark Bots",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ciscospark",
+    "webhook",
+    "affinity",
+    "proxy"
+  ],
+  "author": "Stève Sfartz (@CiscoDevNet)",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "connect": "^3.6.3",
+    "debug": "^3.0.1",
+    "http-proxy": "^1.16.2"
+  }
+}
