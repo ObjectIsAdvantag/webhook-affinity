@@ -2,10 +2,10 @@
 
 A reverse proxy that:
 - looks for the actorId in a Cisco Spark Webhook event
-- injects it as an 'ActorId' HTTP header 
+- injects it as an 'Actorid' HTTP header 
 - then forwards the incoming POST request to a target URL (generally a cluster of Cisco Spark Bots sitting behind a load balancer)
 
-The typical use case is to enable Load Balancing affinity for Bots, based on the Cisco Spark interacting with the bot.
+The typical use case is to enable Load Balancing affinity for cisco Spark bots, based on the PersonId of the users interacting with the bot.
 
 
 ## How to use
@@ -17,7 +17,7 @@ The proxy reads the Load Balancer endpoint via the TARGET_URL env variable.
 git clone https://github.com/ObjectIsAdvantag/webhook-affinity
 cd webhook-affinity
 npm install
-DEBUG=injector TARGET_URL=https://your-bot.herokuapp.com node server.js
+DEBUG=injector TARGET_URL=https://your-bot-server node server.js
 ```
 
 **Instructions on Windows**
@@ -25,10 +25,39 @@ DEBUG=injector TARGET_URL=https://your-bot.herokuapp.com node server.js
 git clone https://github.com/ObjectIsAdvantag/webhook-affinity
 cd webhook-affinity
 npm install
-set TARGET_URL=https://your-bot.herokuapp.com
+set TARGET_URL=https://your-bot-server
 set DEBUG=injector
 node server.js
 ```
+
+## Seeing the proxy at work from your local machine
+
+- Create a [test endpoint](https://requestb.in) where we'll receive Cisco Spark webhook notifications, enriched with the 'Actorid' Header.
+   - Example: https://requestb.in/10zyvg01
+
+- Run the proxy on your local machine with Requestb.in as the destination endpoint. 
+   - Make sure you specify https://requestb.in and not the full path to your requestb.in endpoint (ie, no suffix, as show below)
+   
+   ```shell
+   TARGET_URL=https://requestb.in  node server.js
+   ```
+
+- Expose the proxy via ngrok.
+   
+   ```shell
+   ngrok http 9090
+   ```
+
+- Create a Webhook for (Messages/Created) events with name "Actorid Injection Test" from a Bot Account token and pointing to the ngrok URL, suffixed with your requestb.in identifier. 
+   - Example: https://e7957132.ngrok.io/10zyvg01
+   
+   ![](docs/img/post-webhook-bot-account-to-ngrok.png)
+
+- Now interact with the bot in a Cisco Spark space and check the enriched JSON payload at requestb.in's inspect URL. 
+   - Example: https://requestb.in/10zyvg01?inspect
+   
+   ![](docs/img/inspect-enriched-with-actorId.png)
+
 
 ## Architecture
 

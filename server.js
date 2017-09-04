@@ -67,15 +67,10 @@ var app = connect()
         proxy.web(req, res, proxyOptions);
     });
 
-let proxyPort = process.env.PORT || 9090;    
+var proxyPort = process.env.PORT || 9090;    
 http.createServer(app).listen(proxyPort, function () {
     console.log('listening at: http://localhost:' + proxyPort);
-    if (destinationType == "target") {
-        console.log('targetting: ' + targetURL);
-    }
-    else {
-        console.log('forwarding to proxy: ' + targetURL);
-    }
+    console.log('proxying to: ' + proxyOptions.target);
 });
 
 // Invoked when the connection is established to the target
