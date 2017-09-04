@@ -89,7 +89,7 @@ proxy.on('proxyReq', function (proxyReq, req, res, options) {
 
         // Check actorId is present, and our bot is not the actor
         var actorId = req.body.actorId;
-        if (!actorId && (actorId == botPersonId)) {
+        if (!actorId || (actorId === botPersonId)) {
             // No affinity to setup for incoming request
             if (actorId) {
                 fine("no affinity task: our bot is the actor");                
@@ -133,7 +133,13 @@ proxy.on('proxyRes', function (proxyRes, req, res) {
     // Is there an actorId to associate the cookie to
     var actorId = req.body.actorId;
     if (!actorId) {
-        fine("no actorId in current request => no affinity to setup");
+        fine("no actorId in current request => no affinity to store");
+        return;
+    }
+
+    // It is the bot talking, no affinity to memorize
+    if (actorId === botPersonId) {
+        fine("bot is talking => no affinity to store");
         return;
     }
 
