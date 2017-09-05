@@ -1,16 +1,19 @@
 # Load Balancing Affinity for Cisco Spark Bots
 
-A reverse proxy that:
-- looks for the actorId in a Cisco Spark Webhook event
-- injects it as an 'Actorid' HTTP header 
-- then forwards the incoming POST request to a target URL (generally a cluster of Cisco Spark Bots sitting behind a load balancer)
+A reverse proxy to enables LB affinity (application layer persistance) based on the [actorId property of the Webhook event](https://developer.ciscospark.com/webhooks-explained.html#handling-requests-from-spark) (ie, the personId of the Cisco Spark user interacting with the bot).
 
-The typical use case is to enable Load Balancing affinity for cisco Spark bots, based on the PersonId of the users interacting with the bot.
+The typical use case is to scale stateful Cisco Spark bots, by ensuring the Webhook events are rooted to the bot instance holding context for a group of users interacting with the bot.
+
+The proxy accepts different configuration modes:
+
+- **Affinity cookie**: a cookie is setup by the load balancer in a Webhook HTTP response. The proxy associates the 'actorId' of the Webhook event being processed with the cookie. Next time the same 'actorId' is received, the proxy injects the cookie before forwarding the request to the load balancer. The LB then routes the request to the right bot instance.
+
+- **ActorId injection**: the proxy looks for an 'actorId' property in the incoming Webhook event payload. If found, the proxy add a configurable 'Actorid' HTTP header. The proxy then forwards the HTTP request to a target URL (generally a cluster of Cisco Spark Bots sitting behind a load balancer). Choose this mode if your LB can persist sessions and route traffic based on the ActorId.
 
 
 ## How to use
 
-The proxy reads the Load Balancer endpoint via the TARGET_URL env variable.
+The proxy forwards to the the Load Balancer specified via the TARGET_URL env variable.
 
 **Instructions on Mac/Linux**
 ```shell
@@ -30,19 +33,20 @@ set DEBUG=injector
 node server.js
 ```
 
-## Seeing the proxy at work from your local machine
+## Testing 'ActorId injection' from your local machine
 
-- Create a [test endpoint](https://requestb.in) where we'll receive Cisco Spark webhook notifications, enriched with the 'Actorid' Header.
+- Create a [test endpoint](https://requestb.in) to receive Cisco Spark webhook notifications
    - Example: https://requestb.in/10zyvg01
 
 - Run the proxy on your local machine with Requestb.in as the destination endpoint. 
-   - Make sure you specify https://requestb.in and not the full path to your requestb.in endpoint (ie, no suffix, as show below)
-   
+   - Make sure you specify 'https://requestb.in' and not the full path to your requestb.in endpoint, ie no suffix as show below:
+    
    ```shell
+   cd webhook-affinity
    TARGET_URL=https://requestb.in  node server.js
    ```
 
-- Expose the proxy via ngrok.
+- Expose your local proxy via ngrok. Your proxy is running on port 9090 by default, for which ngrok creates a temporary public endpoint thanks to the command below:
    
    ```shell
    ngrok http 9090
@@ -63,7 +67,9 @@ node server.js
 
 Cisco Spark webhooks send notification events via POST requests, with the [JSON payload documented here](https://developer.ciscospark.com/webhooks-explained.html#handling-requests-from-spark).
 
-In order to maintain affinity to a bot instance, the actorId property is extracted from the JSON webhook notification example below, and injected as an extra HTTP header named: "ActorId".
+In order to enable LB affinity, a proxy is responsible for extracting the actorId of the incoming payload from Cisco Spark, and maintain sessions based on this actorId, or inject headers.
+
+> actorId is the personId of the user that caused the webhook to be sent. For example, on a messsage created webhook, the author of the message will be the actorId. On a membership deleted webhook, the actor is the person who removed a user from a room.
 
 ```json
 {
