@@ -1,8 +1,8 @@
 # Load Balancing Affinity for Cisco Spark Bots
 
-A reverse proxy to enables LB affinity (application layer persistance) based on the [actorId property of the Webhook event](https://developer.ciscospark.com/webhooks-explained.html#handling-requests-from-spark) (ie, the personId of the Cisco Spark user interacting with the bot).
+A reverse proxy to enables LB affinity (application layer persistance) based on the [actorId property of a JSON Webhook event](https://developer.ciscospark.com/webhooks-explained.html#handling-requests-from-spark) (ie, the personId of the Cisco Spark user interacting with the bot).
 
-The typical use case is to scale stateful Cisco Spark bots, by ensuring the Webhook events are rooted to the bot instance holding context for a group of users interacting with the bot.
+The typical use case for this proxy is to scale stateful Cisco Spark bots (such as Botkit conversations), by ensuring the Webhook events are routed to the bot instance holding the in-memory state of conversations from a group of users interacting with the bot.
 
 The proxy accepts different configuration modes:
 
