@@ -1,14 +1,14 @@
-# Load Balancing Affinity for Cisco Spark Bots
+# Load Balancing Affinity for Webex Teams Bots
 
-A reverse proxy to enables LB affinity (application layer persistance) based on the [actorId property of a JSON Webhook event](https://developer.ciscospark.com/webhooks-explained.html#handling-requests-from-spark) (ie, the personId of the Cisco Spark user interacting with the bot).
+A reverse proxy to enables LB affinity (application layer persistance) based on the [actorId property of a JSON Webhook event](https://developer.webex.com/webhooks-explained.html#handling-requests-from-spark) (ie, the personId of the Webex user interacting with the bot).
 
-The typical use case for this proxy is to scale stateful Cisco Spark bots (such as Botkit conversations), by ensuring the Webhook events are routed to the bot instance holding the in-memory state of conversations from a group of users interacting with the bot.
+The typical use case for this proxy is to scale stateful Webex Teams bots (such as Botkit conversations), by ensuring the Webhook events are routed to the bot instance holding the in-memory state of conversations from a group of users interacting with the bot.
 
 The proxy accepts different configuration modes:
 
 - **Affinity cookie**: a cookie is setup by the load balancer in a Webhook HTTP response. The proxy associates the 'actorId' of the Webhook event being processed with the cookie. Next time the same 'actorId' is received, the proxy injects the cookie before forwarding the request to the load balancer. The LB then routes the request to the right bot instance.
 
-- **ActorId injection**: the proxy looks for an 'actorId' property in the incoming Webhook event payload. If found, the proxy add a configurable 'Actorid' HTTP header. The proxy then forwards the HTTP request to a target URL (generally a cluster of Cisco Spark Bots sitting behind a load balancer). Choose this mode if your LB can persist sessions and route traffic based on the ActorId.
+- **ActorId injection**: the proxy looks for an 'actorId' property in the incoming Webhook event payload. If found, the proxy add a configurable 'Actorid' HTTP header. The proxy then forwards the HTTP request to a target URL (generally a cluster of Webex Teams Bots sitting behind a load balancer). Choose this mode if your LB can persist sessions and route traffic based on the ActorId.
 
 
 ## How to use
@@ -35,7 +35,7 @@ node server.js
 
 ## Testing 'ActorId injection' from your local machine
 
-- Create a [test endpoint](https://requestb.in) to receive Cisco Spark webhook notifications
+- Create a [test endpoint](https://requestb.in) to receive Webex Teams webhook notifications
    - Example: https://requestb.in/10zyvg01
 
 - Run the proxy on your local machine with Requestb.in as the destination endpoint. 
@@ -57,7 +57,7 @@ node server.js
    
    ![](docs/img/post-webhook-bot-account-to-ngrok.png)
 
-- Now interact with the bot in a Cisco Spark space and check the enriched JSON payload at requestb.in's inspect URL. 
+- Now interact with the bot in a Webex Teams space and check the enriched JSON payload at requestb.in's inspect URL. 
    - Example: https://requestb.in/10zyvg01?inspect
    
    ![](docs/img/inspect-enriched-with-actorId.png)
@@ -65,9 +65,9 @@ node server.js
 
 ## Architecture
 
-Cisco Spark webhooks send notification events via POST requests, with the [JSON payload documented here](https://developer.ciscospark.com/webhooks-explained.html#handling-requests-from-spark).
+Webex Teams webhooks send notification events via POST requests, with the [JSON payload documented here](https://developer.webex.com/webhooks-explained.html#handling-requests-from-spark).
 
-In order to enable LB affinity, a proxy is responsible for extracting the actorId of the incoming payload from Cisco Spark, and maintain sessions based on this actorId, or inject headers.
+In order to enable LB affinity, a proxy is responsible for extracting the actorId of the incoming payload from the Webex cloud platform, and maintain sessions based on this actorId, or inject headers.
 
 > actorId is the personId of the user that caused the webhook to be sent. For example, on a messsage created webhook, the author of the message will be the actorId. On a membership deleted webhook, the actor is the person who removed a user from a room.
 
