@@ -5,11 +5,11 @@
 
 /* 
  * A reverse proxy that:
- *   - looks for the actorId in a Cisco Spark Webhook event
+ *   - looks for the actorId in a Webhook event
  *   - injects it as an 'ActorId' HTTP header 
- *   - then forwards the incoming POST request to a target URL (generally a cluster of Cisco Spark Bots sitting behind a load balancer)
+ *   - then forwards the incoming POST request to a target URL (generally a cluster of Webex Teams Bots sitting behind a load balancer)
  *
- * The typical use case is to enable Load Balancing affinity for Bots, based on the Cisco Spark interacting with the bot.
+ * The typical use case is to enable Load Balancing affinity for Bots, based on the user (actorId) interacting with the bot.
  * 
  * Code started from node-http-proxy sample: https://github.com/nodejitsu/node-http-proxy/blob/master/examples/middleware/bodyDecoder-middleware.js
  *
@@ -55,7 +55,7 @@ var app = connect()
         }
         else { // POST
 
-            // If there's no body, no use spending time forwarding to Cisco Spark
+            // If there's no body, no use spending time forwarding to Webex cloud
             if (!req.body) {
                 debug("no body found in request, arborting...");
                 res.writeHead(400, {
@@ -103,7 +103,7 @@ proxy.on('proxyReq', function (proxyReq, req, res, options) {
             fine("injecting 'ActorId' HTTP header: " + actorId)
             proxyReq.setHeader('ActorId', actorId);
 
-            // Is there an affinity registered for the Spark user
+            // Is there an affinity registered for the Webex Teams user
             var cookie = this.fetchCookie(actorId);
             if (cookie) {
                 fine("injecting 'heroku-session-affinity' cookie for actor: " + actorId);
