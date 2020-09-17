@@ -7,7 +7,7 @@
  * A reverse proxy that:
  *   - looks for the actorId in a Webhook event
  *   - injects it as an 'ActorId' HTTP header 
- *   - then forwards the incoming POST request to a target URL (generally a cluster of Webex Teams Bots sitting behind a load balancer)
+ *   - then forwards the incoming POST request to a target URL (generally a cluster of Webex bots sitting behind a load balancer)
  *
  * The typical use case is to enable Load Balancing affinity for Bots, based on the user (actorId) interacting with the bot.
  * 
@@ -103,7 +103,7 @@ proxy.on('proxyReq', function (proxyReq, req, res, options) {
             fine("injecting 'ActorId' HTTP header: " + actorId)
             proxyReq.setHeader('ActorId', actorId);
 
-            // Is there an affinity registered for the Webex Teams user
+            // Is there an affinity registered for the Webex user
             var cookie = this.fetchCookie(actorId);
             if (cookie) {
                 fine("injecting 'heroku-session-affinity' cookie for actor: " + actorId);
